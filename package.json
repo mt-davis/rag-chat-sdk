@@ -1,0 +1,45 @@
+{
+  "name": "@mt-davis/rag-chat-sdk",
+  "version": "1.0.0",
+  "description": "Floating Claude 3 + OpenAI + Supabase RAG Chat SDK for SaaS apps.",
+  "main": "src/index.js",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mt-davis/rag-chat-sdk.git"
+  },
+  "keywords": [
+    "RAG",
+    "Claude3",
+    "OpenAI",
+    "Supabase",
+    "Chatbot",
+    "SDK",
+    "Floating Chat",
+    "Healthcare Navigation",
+    "AI Assistant"
+  ],
+  "author": "MT Davis",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.7.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "framer-motion": "^10.18.0",
+    "langchain": "^0.2.0",
+    "openai": "^4.96.0"
+  },
+  "peerDependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/mt-davis/rag-chat-sdk/issues"
+  },
+  "homepage": "https://github.com/mt-davis/rag-chat-sdk#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
