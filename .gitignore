@@ -1,5 +1,44 @@
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Environment variables
 .env
-*.config.js
-.npmignore
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# Allow Next.js config
+!next.config.js
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage directories
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Misc
+.npmignore
+.vercel
+.turbo

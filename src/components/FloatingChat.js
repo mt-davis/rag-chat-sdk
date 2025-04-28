@@ -1,14 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import Chat from './Chat';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MessageCircle, X } from 'lucide-react';
 
 export default function FloatingChat() {
   const [isOpen, setIsOpen] = useState(false);
   const chatRef = useRef();
 
+  // Only close when clicking outside the chat and the toggle button
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (chatRef.current && !chatRef.current.contains(event.target)) {
+      if (chatRef.current && 
+          !chatRef.current.contains(event.target) && 
+          !event.target.closest('button[data-chat-toggle]')) {
         setIsOpen(false);
       }
     };
@@ -20,14 +24,25 @@ export default function FloatingChat() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
+  const handleCloseChat = () => {
+    setIsOpen(false);
+  };
+
   return (
     <div className="fixed bottom-5 right-5 z-50">
-      <button
+      <motion.button
+        data-chat-toggle="true"
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full w-16 h-16 shadow-lg flex items-center justify-center text-3xl"
+        className="bg-primary-600 hover:bg-primary-700 text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
-        {isOpen ? '×' : '?'}
-      </button>
+        {isOpen ? (
+          <X className="h-6 w-6" />
+        ) : (
+          <MessageCircle className="h-6 w-6" />
+        )}
+      </motion.button>
 
       <AnimatePresence>
         {isOpen && (
@@ -37,9 +52,9 @@ export default function FloatingChat() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-5 w-80 h-96 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 right-5 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
-            <Chat />
+            <Chat onClose={handleCloseChat} />
           </motion.div>
         )}
       </AnimatePresence>

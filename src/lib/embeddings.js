@@ -1,14 +1,28 @@
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 
-const openai = new OpenAIApi(
-  new Configuration({ apiKey: process.env.OPENAI_API_KEY })
-);
+const isDemoMode = !process.env.OPENAI_API_KEY;
+
+const openai = isDemoMode ? {
+  embeddings: {
+    create: async () => ({
+      data: [{
+        embedding: new Array(1536).fill(0) // Mock embedding vector
+      }]
+    })
+  }
+} : new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 export async function embedText(text) {
-  const response = await openai.createEmbedding({
+  if (isDemoMode) {
+    console.log('Running in demo mode. Add OPENAI_API_KEY to .env.local for real embeddings.');
+  }
+  
+  const response = await openai.embeddings.create({
     model: 'text-embedding-ada-002',
     input: text,
   });
 
-  return response.data.data[0].embedding;
+  return response.data[0].embedding;
 }
