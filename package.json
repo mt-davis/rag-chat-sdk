@@ -1,9 +1,8 @@
 {
   "name": "@mt-davis/rag-chat-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Floating Claude 3 + OpenAI + Supabase RAG Chat SDK for SaaS apps.",
   "main": "src/index.js",
-  "private": true,
   "scripts": {
     "dev": "next dev -p 3333",
     "build": "next build",
@@ -29,7 +28,7 @@
   "author": "MT Davis",
   "license": "MIT",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.7.0",
