@@ -1,25 +1,29 @@
-# NaviCare AI - Claude 3 + OpenAI RAG Chat SDK
+# Next.js Chat SDK
 
-Welcome to your reusable **Claude 3 + OpenAI + Supabase RAG Chat SDK**!
-
-This SDK allows you to instantly add a **floating AI chat bubble** powered by **RAG retrieval** to any Next.js app, featuring a modern user interface with glassmorphism effects, smooth animations, and a responsive design.
+A modern, customizable chat interface for Next.js applications featuring a sleek UI with glassmorphism effects, smooth animations, and responsive design. This SDK provides a floating chat widget that can be integrated into any Next.js application.
 
 ---
 
 ## Features
 
-- Floating chat widget (Intercom-style) with popout modal capability
-- Modern UI with glassmorphism effects and smooth animations
-- Consistent AI avatar styling and auto-scrolling to latest messages
-- Light and dark mode support with responsive design
-- Chat bubbles with distinct styling for user and AI messages
+### UI/UX Features
+- Floating chat widget with expandable modal view
+- Modern UI with glassmorphism effects and backdrop blur
+- Smooth animations powered by Framer Motion
+- Responsive design with adjustable chat window sizes
+- Auto-scrolling to latest messages
+- Auto-focusing input field after sending/receiving messages
+- Welcome message when chat opens
 - Real-time typing indicator for AI responses
-- Claude 3 LLM answering (Anthropic API)
-- OpenAI Embeddings for vector search
-- Supabase pgvector vectorstore backend
-- Message history saving (Supabase messages table)
-- Modular, scalable, HIPAA-compliant structure
-- Comprehensive JSDoc documentation for developer clarity
+- Message persistence between sessions using localStorage
+- New session button to start fresh conversations
+- Light and dark mode support
+
+### Chat Components
+- Stylish chat bubbles with distinct styling for user and AI messages
+- Proper word wrapping in messages
+- Clean, modern input field with send button
+- Comprehensive JSDoc documentation for all components
 
 ---
 
@@ -29,78 +33,155 @@ This SDK allows you to instantly add a **floating AI chat bubble** powered by **
 /
 ├── /src
 │   ├── /components
-│   │   ├── Chat.js              # Chat input/output UI with modern interface
-│   │   ├── FloatingChat.js      # Floating button + modal with popout capability
+│   │   ├── Chat.js              # Main chat component with message handling
+│   │   ├── FloatingChat.js      # Floating button + expandable chat interface
 │   │   ├── /ui                  # UI component directory
 │   │   │   ├── chat-bubble.js   # Modern message bubble component
 │   │   │   ├── chat-input.js    # Input field with send button
-│   │   │   ├── typing-indicator.js # Animated typing indicator
-│   │   │   ├── message-loading.js # SVG loading animation
+│   │   │   ├── message-loading.js # Loading animation for AI typing
 │   │   │   ├── modal.js         # Popout modal component
 │   │   │   ├── expandable-chat.js # Chat expansion components
-│   │   ├── MessageBubble.js     # Legacy message component (replaced)
 │   ├── /lib
-│   │   ├── supabaseClient.js    # Supabase client setup
-│   │   ├── embeddings.js        # Generate OpenAI embeddings
-│   │   ├── rag.js              # Perform retrieval + RAG prompt building
-│   │   ├── anthropicClient.js   # Anthropic Claude 3 client setup
-├── /examples
-│   └── demo.js                  # Example usage
+│   │   ├── utils.js            # Utility functions
+│   │   ├── supabaseClient.js    # Supabase client (optional)
 ```
 
 ---
 
 ## Installation
 
-### Option 1: Install from NPM
 ```bash
-npm install @mt-davis/rag-chat-sdk
-```
-
-### Option 2: Install from GitHub
-If you want to use the package directly from GitHub:
-```bash
-npm install git+https://github.com/mt-davis/rag-chat-sdk.git
+npm install framer-motion lucide-react
 ```
 
 ## Setup Instructions
 
-### 1. Install Required Packages
+### 1. Add Required Dependencies
 
-```bash
-npm install @supabase/supabase-js openai @anthropic-ai/sdk framer-motion
+This SDK requires the following packages:
+- `framer-motion` - For smooth animations
+- `lucide-react` - For icons
+
+### 2. Import and Use the Components
+
+```jsx
+import { FloatingChat } from './components/FloatingChat';
+
+export default function YourApp() {
+  return (
+    <div>
+      {/* Your app content */}
+      
+      {/* Add the floating chat */}
+      <FloatingChat 
+        position="bottom-right" // 'bottom-right', 'bottom-left', 'top-right', 'top-left'
+        size="md" // 'sm', 'md', 'lg'
+      />
+    </div>
+  );
+}
 ```
 
-If using Tailwind CSS for styling:
-```bash
-npm install tailwindcss
+### 3. Connect to Your AI Service (Optional)
+
+By default, the chat uses a demo mode that returns placeholder responses. To connect to your own AI service:
+
+```jsx
+// In Chat.js, modify the handleSubmit function to call your AI API
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!input.trim() || loading) return;
+  
+  const userMessage = {
+    role: 'user',
+    content: input,
+    id: `user-${Date.now()}`,
+  };
+  
+  setMessages(prev => [...prev, userMessage]);
+  setInput('');
+  setLoading(true);
+  
+  try {
+    // Call your AI API here
+    const response = await yourAIService.getResponse(input);
+    
+    const aiMessage = {
+      role: 'assistant',
+      content: response.text,
+      id: `ai-${Date.now()}`,
+    };
+    
+    setMessages(prev => [...prev, aiMessage]);
+  } catch (error) {
+    console.error('Error getting AI response:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 ```
 
----
+## Customization
 
-### 2. Configure Environment Variables
+### Chat Sizes
 
-Create a `.env.local` file in your project:
+The chat window comes in three sizes that you can customize:
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-OPENAI_API_KEY=your-openai-api-key
-ANTHROPIC_API_KEY=your-anthropic-api-key
+```jsx
+// In Chat.js
+const sizes = {
+  sm: 'w-[320px]',  // Small size
+  md: 'w-[380px]',  // Medium size
+  lg: 'w-[440px]',  // Large size
+};
 ```
 
----
+### Positioning
 
-### 3. Create Supabase Tables
+The floating chat can be positioned in any corner of the screen:
 
-Run these SQL scripts:
+```jsx
+// In Chat.js
+const positions = {
+  'bottom-right': 'bottom-5 right-5',
+  'bottom-left': 'bottom-5 left-5',
+  'top-right': 'top-5 right-5',
+  'top-left': 'top-5 left-5',
+};
+```
 
-#### Documents Table (for RAG)
-```sql
-create extension if not exists vector;
+### Styling
 
-create table documents (
-  id uuid primary key default uuid_generate_v4(),
+The chat uses a modern glassmorphism design with backdrop blur effects. You can customize the appearance by modifying the CSS classes in the respective components.
+
+## Features in Detail
+
+### Message Persistence
+
+Messages are automatically saved to localStorage and restored when the chat is reopened. This allows conversations to persist even when the user closes the browser.
+
+### New Session Button
+
+A dedicated button allows users to start a new conversation while keeping the chat open. This clears the message history and displays a fresh welcome message.
+
+### Auto-focusing
+
+The input field is automatically focused after:
+- Sending a message
+- Receiving an AI response
+- Opening the modal view
+
+This creates a seamless experience where users can type continuously without clicking back into the input field.
+
+### Responsive Design
+
+The chat interface adapts to different screen sizes and can be expanded into a full modal view for better readability on mobile devices.
+
+## License
+
+MIT
   content text,
   embedding vector(1536),
   created_at timestamp with time zone default now()
@@ -224,7 +305,7 @@ MIT
 
 ---
 
-**Built with ❤️ by NaviCare AI**
+**Built with ❤️**
 
 # 🚀 You're Ready to Deploy!
 

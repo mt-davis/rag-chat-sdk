@@ -1,3 +1,4 @@
+import React from 'react';
 import { Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
@@ -5,18 +6,22 @@ import { cn } from '../../lib/utils';
 /**
  * ChatInput component provides a styled input field with a send button
  * for users to type and submit messages in the chat interface.
+ * This component is forwarded a ref to allow focusing the input programmatically.
  * 
  * @component
  * @param {Object} props - Component props
  * @param {string} props.value - The current value of the input field
  * @param {Function} props.onChange - Function called when input value changes
  * @param {boolean} [props.disabled=false] - Whether the input is disabled
+ * @param {string} [props.className] - Additional CSS classes for the input
+ * @param {React.Ref} ref - Ref forwarded to the input element
  * @returns {JSX.Element} A styled input field with a send button
  */
-export function ChatInput({ value, onChange, disabled }) {
+export const ChatInput = React.forwardRef(({ value, onChange, disabled, className }, ref) => {
   return (
     <div className="relative flex-1">
       <input
+        ref={ref}
         type="text"
         value={value}
         onChange={onChange}
@@ -29,6 +34,7 @@ export function ChatInput({ value, onChange, disabled }) {
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'placeholder:text-gray-400 dark:placeholder:text-gray-500',
           'shadow-[0_2px_20px_-12px_rgba(0,0,0,0.1)]',
+          className,
           'transition-all duration-200'
         )}
         disabled={disabled}
@@ -53,4 +59,4 @@ export function ChatInput({ value, onChange, disabled }) {
       </div>
     </div>
   );
-}
+});

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import Chat from './Chat';
+import { Chat } from './Chat';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X } from 'lucide-react';
 

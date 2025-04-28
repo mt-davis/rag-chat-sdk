@@ -1,0 +1,575 @@
+import { useState, useEffect, useRef } from 'react';
+import { Paperclip, Mic, Maximize2, MessageSquare, CornerDownRight } from 'lucide-react';
+import { ChatBubble } from './ui/chat-bubble';
+import { ChatInput } from './ui/chat-input';
+import { MessageLoading } from './ui/message-loading';
+import { Modal } from './ui/modal';
+
+import { X, Bot, Minus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../lib/utils';
+
+/**
+ * @typedef {Object} Message
+ * @property {'user'|'assistant'} role - The role of the message sender
+ * @property {string} content - The text content of the message
+ * @property {string} [id] - Unique ID for the message
+ */
+// Re-define the components that were removed from expandable-chat.js
+
+const positions = {
+  'bottom-right': 'bottom-5 right-5',
+  'bottom-left': 'bottom-5 left-5',
+  'top-right': 'top-5 right-5',
+  'top-left': 'top-5 left-5',
+};
+
+const sizes = {
+  sm: 'w-[500px]',
+  md: 'w-[600px]',
+  lg: 'w-[700px]',
+};
+
+/**
+ * ExpandableChat component serves as the container for the chat interface
+ * in its floating state. It handles positioning and animations.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render
+ * @param {'bottom-right'|'bottom-left'|'top-right'|'top-left'} [props.position='bottom-right'] - Position on the screen
+ * @param {'sm'|'md'|'lg'} [props.size='md'] - Size of the chat container
+ * @returns {JSX.Element} A positioned and animated chat container
+ */
+function ExpandableChat({ 
+  children, 
+  position = 'bottom-right',
+  size = 'md',
+}) {
+  return (
+    <div className={cn('fixed z-50', positions[position])}>
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.2, type: 'spring', stiffness: 500 }}
+          className={cn(
+            sizes[size],
+            'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md',
+            'rounded-2xl overflow-hidden border border-gray-200/20',
+            'shadow-[0_8px_40px_-12px_rgba(0,0,0,0.2)]',
+            'flex flex-col'
+          )}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/**
+ * ExpandableChatBody provides the scrollable content area for the chat messages.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render
+ * @param {string} [props.className] - Additional CSS classes
+ * @returns {JSX.Element} A styled container for chat messages
+ */
+function ExpandableChatBody({ children, className }) {
+  return (
+    <div className={cn('flex-1 overflow-y-auto', className)}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * ExpandableChatFooter provides the container for the chat input area.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render
+ * @returns {JSX.Element} A styled container for the chat input
+ */
+function ExpandableChatFooter({ children }) {
+  return (
+    <div className="border-t border-gray-200/20">
+      {children}
+    </div>
+  );
+}
+
+/**
+ * ExpandableChatHeader provides the header section of the chat interface with controls.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onClose - Function to call when the close button is clicked
+ * @param {Function} props.onMinimize - Function to call when the minimize button is clicked
+ * @param {Function} [props.onPopout] - Optional function to call when the popout button is clicked
+ * @returns {JSX.Element} A styled header with controls
+ */
+function ExpandableChatHeader({ onClose, onMinimize, onPopout }) {
+  return (
+    <div className="px-4 py-3 border-b border-gray-200/20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center">
+            <Bot className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-900 dark:text-gray-100">Chat Assistant</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              Online
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {onPopout && (
+            <button
+              onClick={onPopout}
+              className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              title="Expand to full view"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={onMinimize}
+            className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Main Chat component that provides the complete chat interface with AI integration.
+ * Includes message handling, demo mode, modal popout, and UI rendering.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onClose - Function to call when the chat is closed
+ * @returns {JSX.Element} The complete chat interface
+ */
+export default function Chat({ onClose }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  // Show initial welcome message when component mounts
+  useEffect(() => {
+    setTimeout(() => {
+      setMessages([{ 
+        id: 'welcome-msg',
+        role: 'assistant', 
+        content: 'Hello! I\'m your AI assistant. How can I help you today?',
+        parentId: null,
+        threadId: null,
+        isWelcomeMessage: true // Flag to identify the welcome message
+      }]);
+    }, 500);
+  }, []);
+
+  // Auto-scroll to bottom whenever messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
+
+  // Function to handle message submission
+    if (targetMessage) {
+      // Ensure the message has a threadId
+      if (!targetMessage.threadId) {
+        targetMessage.threadId = `thread-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
+      }
+      
+      setReplyingTo(targetMessage);
+      
+      // Set a small delay to ensure the DOM is ready
+      setTimeout(() => {
+        // Focus the input field
+        const inputField = document.querySelector('input[type="text"]');
+        if (inputField) {
+          inputField.focus();
+          console.log('Input field focused'); // Debugging log
+        } else {
+          console.log('Input field not found'); // Debugging log
+        }
+      }, 100);
+    } else {
+      console.error('Message with ID', messageId, 'not found');
+    }
+  };
+  
+  /**
+   * Cancel replying to a specific message
+   */
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+  
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!input.trim()) return;
+    
+    console.log('Submitting message, replyingTo:', replyingTo); // Debug log
+    
+    // Create a new message with a unique ID
+    const msgId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    
+    // Handle thread ID generation
+    let threadId;
+    if (replyingTo) {
+      // If replying to a message that already has a thread ID, use it
+      if (replyingTo.threadId) {
+        threadId = replyingTo.threadId;
+      } 
+      // If replying to a message without a thread ID, create a new one
+      else {
+        threadId = `thread-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
+      }
+      console.log('Using thread ID for reply:', threadId, 'to message:', replyingTo.id);
+    } else {
+      // Not replying to any message, so no thread
+      threadId = null;
+    }
+    
+    console.log('Generated message ID:', msgId, 'Thread ID:', threadId); // Debug log
+    
+    // Add user message to messages - no threading
+    const newUserMessage = {
+      id: msgId,
+      role: 'user',
+      content: input,
+      timestamp: Date.now()
+    };
+    
+    console.log('Adding user message:', newUserMessage); // Debug log
+    
+    setMessages(prev => [...prev, newUserMessage]);
+    
+    // Clear input and show loading
+    setInput('');
+    setLoading(true);
+    
+    // Store the user message for simulating a response
+    const userMessage = input;
+    
+    // Demo mode: generate a response after a delay
+    setTimeout(() => {
+      let responseMessage = 'This is a demo response. Please add your ANTHROPIC_API_KEY to .env.local to use the real API.';
+      
+      // Generate different responses based on user input for demo purposes
+      if (userMessage.toLowerCase().includes('hello') || userMessage.toLowerCase().includes('hi')) {
+        responseMessage = 'Hello there! How can I help you today?';
+      } else if (userMessage.toLowerCase().includes('help')) {
+        responseMessage = 'I\'m here to help! What would you like to know?';
+      } else if (userMessage.toLowerCase().includes('thank')) {
+        responseMessage = 'You\'re welcome! Is there anything else you need?';
+      } else if (userMessage.toLowerCase().includes('how') && userMessage.toLowerCase().includes('you')) {
+        responseMessage = 'I\'m just a demo AI, but I\'m working great! Thanks for asking.';
+      }
+      
+      // Get the last user message (which we just added)
+      const lastUserMessage = messages[messages.length - 1];
+      
+      console.log('Generating AI response to:', lastUserMessage);
+      
+      // Create a unique ID for the AI response
+      const replyId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Determine which message the AI should reply to and which thread to use
+      let parentMessageId;
+      let currentThreadId;
+      
+      // AI always responds to the last message
+      parentMessageId = lastUserMessage.id;
+      console.log('AI responding to message:', parentMessageId);
+      
+      // Add AI response - simplified structure
+      setMessages(prev => {
+        // Create the AI response message with direct reference to parent
+        const newAIMessage = { 
+          id: replyId,
+          role: 'assistant', 
+          content: responseMessage,
+          timestamp: Date.now()
+        };
+        
+        console.log('Adding AI response:', newAIMessage);
+        
+        // Add the AI reply to the existing messages
+        return [...prev, newAIMessage];
+      });
+      
+      // Clear the replying state
+      setReplyingTo(null);
+      setLoading(false);
+    }, 1500);
+  }
+
+  // Open the modal/popout view while preserving the reply state
+  const handlePopout = () => {
+    // Open the modal while preserving any active reply state
+    setIsModalOpen(true);
+    
+    // Force focus on the input field if replying
+    if (replyingTo) {
+      setTimeout(() => {
+        const modalInput = document.querySelector('.modal-input');
+        if (modalInput) {
+          modalInput.focus();
+        }
+      }, 300); // Short delay to ensure modal is rendered
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+  
+  /**
+   * Determines if a message should be shown as a threaded reply
+   * Renders the chat message list and input field for reuse in both
+   * the standard chat view and the popout modal view.
+   * 
+   * @returns {JSX.Element} Rendered chat content
+   */
+  const renderChatContent = () => (
+    <>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex h-full items-center justify-center text-gray-400">
+            <p>Start a conversation</p>
+          </div>
+        )}
+        
+        {/* Render messages in a simple chronological list */}
+        {messages.map((message, i) => {
+          // Check if this is a reply message
+          const isReply = isReplyMessage(message);
+          const parentMessage = isReply ? getParentMessage(message, messages) : null;
+          
+          // For reply messages, we want to show them indented with a thread indicator
+          return (
+            <div key={message.id || i} className={isReply ? 'ml-8' : ''}>
+              {/* Only show thread indicator for actual replies */}
+              {isReply && parentMessage && message.parentId && (
+                <div className="flex items-center gap-1 text-xs text-white mb-1">
+                  <CornerDownRight className="h-3 w-3" />
+                  <span>Thread</span>
+                </div>
+              )}
+              
+              {/* The actual message bubble */}
+              <ChatBubble
+                id={message.id}
+                message={message.content}
+                isAI={message.role === 'assistant'}
+                isThreaded={isReply}
+                isThreadParent={message.isThreadParent}
+                isRepliedTo={replyingTo?.id === message.id}
+                isWelcomeMessage={message.isWelcomeMessage}
+                onReply={!message.isWelcomeMessage ? handleReply : undefined}
+              />
+            </div>
+          );
+        })}
+        {loading && (
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+            <MessageLoading />
+            <span>AI is typing</span>
+          </div>
+        )}
+        <div ref={messagesEndRef} className="h-0" />
+      </div>
+      <div className="border-t border-gray-200/20">
+        <form onSubmit={handleSubmit} className="p-4">
+          <div className="relative w-full">
+            {replyingTo && replyingTo.content && (
+              <div className="absolute -top-10 left-0 right-0 bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 rounded-t-lg flex justify-between items-center text-xs border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <CornerDownRight className="h-3 w-3 text-primary-500" />
+                  <span>Replying to: <span className="font-medium text-primary-600 dark:text-primary-400">{replyingTo.content.substring(0, 30)}{replyingTo.content.length > 30 ? '...' : ''}</span></span>
+                </div>
+                <button 
+                  type="button" 
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    cancelReply();
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            <ChatInput
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={loading}
+              className="modal-input"
+            />
+          </div>
+        </form>
+      </div>
+    </>
+  );
+
+  if (isMinimized) {
+    return null; // Or render a minimized version
+  }
+
+  return (
+    <>
+      <ExpandableChat size="lg">
+        <ExpandableChatHeader 
+          onClose={onClose}
+          onMinimize={() => setIsMinimized(true)}
+          onPopout={handlePopout}
+        />
+        <ExpandableChatBody>
+          <div className="p-4 space-y-4 min-h-[300px]">
+            {messages.length === 0 && (
+              <div className="flex items-center justify-center text-gray-400 h-[200px]">
+                <p>Start a conversation</p>
+              </div>
+            )}
+            
+            {/* Use the same simplified message rendering approach */}
+            {messages.map((message, i) => {
+              // Check if this is a reply message
+              const isReply = isReplyMessage(message);
+              const parentMessage = isReply ? getParentMessage(message, messages) : null;
+              
+              // For reply messages, we want to show them indented with a thread indicator
+              return (
+                <div key={message.id || i}>
+                  <ChatBubble
+                    id={message.id}
+                    message={message.content}
+                    isAI={message.role === 'assistant'}
+                    isWelcomeMessage={message.isWelcomeMessage}
+                  />
+                </div>
+              );
+            })}
+            {loading && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                <MessageLoading />
+                <span>AI is typing</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} className="h-0" />
+          </div>
+        </ExpandableChatBody>
+        <ExpandableChatFooter>
+          <form onSubmit={handleSubmit} className="p-4">
+            <div className="relative w-full">
+              {replyingTo && replyingTo.content && (
+                <div className="absolute -top-10 left-0 right-0 bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 rounded-t-lg flex justify-between items-center text-xs border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <CornerDownRight className="h-3 w-3 text-primary-500" />
+                    <span>Replying to: <span className="font-medium text-primary-600 dark:text-primary-400">{replyingTo.content.substring(0, 30)}{replyingTo.content.length > 30 ? '...' : ''}</span></span>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      cancelReply();
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              <ChatInput
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+          </form>
+        </ExpandableChatFooter>
+      </ExpandableChat>
+
+      {/* Modal popout for expanded view */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Chat Assistant" size="lg">
+        <div className="flex flex-col h-full w-full overflow-hidden">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4">
+            {messages.length === 0 && (
+              <div className="flex items-center justify-center text-gray-400 h-[200px]">
+                <p>Start a conversation</p>
+              </div>
+            )}
+            
+            {/* Use the same simplified message rendering approach */}
+            {messages.map((message, i) => {
+              // Check if this is a reply message
+              const isReply = isReplyMessage(message);
+              const parentMessage = isReply ? getParentMessage(message, messages) : null;
+              
+              // For reply messages, we want to show them indented with a thread indicator
+              return (
+                <div key={message.id || i}>
+                  <ChatBubble
+                    id={message.id}
+                    message={message.content}
+                    isAI={message.role === 'assistant'}
+                    isWelcomeMessage={message.isWelcomeMessage}
+                  />
+                </div>
+              );
+            })}
+            {loading && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                <MessageLoading />
+                <span>AI is typing</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} className="h-0" />
+          </div>
+          
+          {/* Chat input */}
+          <div className="border-t border-gray-200/20">
+            <form onSubmit={handleSubmit} className="p-4">
+              <div className="relative w-full">
+
+                <ChatInput
+                  value={input}
+                  onChange={setInput}
+                  disabled={loading}
+                  className="modal-input"
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+}

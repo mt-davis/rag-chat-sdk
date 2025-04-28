@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Bot, MessageSquare } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 /**
@@ -15,9 +15,10 @@ import { cn } from '../../lib/utils';
  * @param {React.ReactNode} props.children - Content to display inside the modal
  * @param {string} props.title - Title text shown in the modal header
  * @param {('sm'|'md'|'lg'|'xl'|'full')} [props.size='md'] - Controls the width of the modal
+ * @param {Function} [props.onNewSession] - Optional function to call when starting a new session
  * @returns {JSX.Element|null} The modal component or null if not open
  */
-export function Modal({ isOpen, onClose, children, title, size = 'md' }) {
+export function Modal({ isOpen, onClose, children, title, size = 'md', onNewSession }) {
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscKey = (e) => {
@@ -72,23 +73,38 @@ export function Modal({ isOpen, onClose, children, title, size = 'md' }) {
               'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md',
               'border border-gray-200/20 dark:border-gray-700/20',
               sizeClasses[size],
-              'h-[80vh]'
+              'max-h-[80vh] overflow-hidden'
             )}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200/20 dark:border-gray-700/20">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">{title}</h2>
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-primary-500" />
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">{title}</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                {onNewSession && (
+                  <button
+                    onClick={onNewSession}
+                    className="p-1 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
+                    aria-label="New Session"
+                    title="Start a new chat session"
+                  >
+                    <MessageSquare className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
             
-            {/* Modal body */}
-            <div className="flex-1 overflow-auto p-4">
+            {/* Modal body - ensure no horizontal scrolling */}
+            <div className="flex-1 overflow-hidden w-full">
               {children}
             </div>
           </motion.div>
