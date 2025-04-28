@@ -20,24 +20,35 @@ This SDK allows you to instantly add a **floating AI chat bubble** powered by **
 ## Folder Structure
 
 ```bash
-/sdk
-  ├── /components
-  │     ├── Chat.js              # Chat input/output UI
-  │     ├── FloatingChat.js      # Floating button + modal
-  │     ├── MessageBubble.js     # (Optional) Message UI unit
-  ├── /lib
-  │     ├── supabaseClient.js    # Supabase client setup
-  │     ├── embeddings.js        # Generate OpenAI embeddings
-  │     ├── rag.js               # Perform retrieval + RAG prompt building
-  │     ├── anthropicClient.js   # Anthropic Claude 3 client setup
-  ├── /pages
-  │     ├── /api
-  │           ├── chat.js        # API route: chat logic (retrieve + answer)
-  ├── /scripts
-  │     ├── embedDocuments.js    # Upload and embed documents
+/
+├── /src
+│   ├── /components
+│   │   ├── Chat.js              # Chat input/output UI
+│   │   ├── FloatingChat.js      # Floating button + modal
+│   │   ├── MessageBubble.js     # Message UI component
+│   ├── /lib
+│   │   ├── supabaseClient.js    # Supabase client setup
+│   │   ├── embeddings.js        # Generate OpenAI embeddings
+│   │   ├── rag.js              # Perform retrieval + RAG prompt building
+│   │   ├── anthropicClient.js   # Anthropic Claude 3 client setup
+├── /examples
+│   └── demo.js                  # Example usage
 ```
 
 ---
+
+## Installation
+
+### Option 1: Install from NPM
+```bash
+npm install @mt-davis/rag-chat-sdk
+```
+
+### Option 2: Install from GitHub
+If you want to use the package directly from GitHub:
+```bash
+npm install git+https://github.com/mt-davis/rag-chat-sdk.git
+```
 
 ## Setup Instructions
 
@@ -54,14 +65,15 @@ npm install tailwindcss
 
 ---
 
-### 2. Create a `.env.local` file
+### 2. Configure Environment Variables
+
+Create a `.env.local` file in your project:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-project.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 OPENAI_API_KEY=your-openai-api-key
-CLAUDE_API_KEY=your-anthropic-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
 ```
 
 ---
@@ -129,24 +141,14 @@ $$;
 
 ---
 
-### 4. Embed Documents into Supabase
+### 4. Usage
 
-Run:
-```bash
-node sdk/scripts/embedDocuments.js
-```
-*This uploads and embeds your documents for retrieval.*
-
----
-
-### 5. Import Floating Chat into Your Pages
-
-In your `pages/_app.js` or `pages/index.js`:
+Basic usage in your Next.js app:
 
 ```jsx
-import FloatingChat from '../sdk/components/FloatingChat';
+import { FloatingChat } from '@mt-davis/rag-chat-sdk';
 
-export default function Home() {
+export default function App() {
   return (
     <>
       {/* Your page content */}
@@ -156,25 +158,60 @@ export default function Home() {
 }
 ```
 
----
+Advanced usage with custom configuration:
 
-### 6. Ready to Chat!
+```jsx
+import { FloatingChat, supabase, anthropic } from '@mt-davis/rag-chat-sdk';
 
-✅ Users can click the floating button.  
-✅ Ask any question.  
-✅ Claude 3 answers with real RAG knowledge.  
-✅ Messages saved to Supabase for tracking!
+export default function App() {
+  return (
+    <FloatingChat 
+      theme="light"
+      position="bottom-right"
+      initialMessage="How can I help you today?"
+      supabaseClient={supabase}
+      anthropicClient={anthropic}
+    />
+  );
+}
+```
+
+## Examples
+
+The `/examples` directory contains sample implementations:
+
+### Basic Demo
+`/examples/demo.js` - Shows basic integration of the FloatingChat component in a Next.js app.
+
+To run the demo:
+1. Clone this repository
+2. Install dependencies: `npm install`
+3. Copy `.env.example` to `.env.local` and add your API keys
+4. Run `npm run dev`
+5. Open `http://localhost:3000`
 
 ---
 
 ## Optional Enhancements
 
-- Enable Claude Streaming for typewriter-like responses.
-- Add a "conversation history" side panel.
-- Integrate Stripe to monetize chat access.
-- Admin dashboard to review conversations.
+- Enable Claude streaming for typewriter-like responses
+- Add conversation history panel
+- Integrate with Stripe for monetization
+- Add admin dashboard for conversation review
 
 ---
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT
+
+---
+
+**Built with ❤️ by NaviCare AI**
 
 # 🚀 You're Ready to Deploy!
 
@@ -182,10 +219,5 @@ With this SDK you can:
 - Drop the chat into **ANY SaaS project**
 - Launch MVPs, pilot programs, support bots easily
 - Expand to mobile apps (Next.js + Expo!)
-
----
-
-**Built for NaviCare AI by your future self.**  
-**Control your AI. Own your SaaS.**
 
 Let's GO! 🚀
