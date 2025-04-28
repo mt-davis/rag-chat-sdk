@@ -3,6 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
+/**
+ * Modal component provides a way to display content in a layer that sits above the rest of the page content.
+ * Used for the chat popout feature to show an expanded version of the chat interface.
+ * Includes animations, backdrop blur, and responsive sizing options.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Controls whether the modal is displayed
+ * @param {Function} props.onClose - Function to call when the modal is closed
+ * @param {React.ReactNode} props.children - Content to display inside the modal
+ * @param {string} props.title - Title text shown in the modal header
+ * @param {('sm'|'md'|'lg'|'xl'|'full')} [props.size='md'] - Controls the width of the modal
+ * @returns {JSX.Element|null} The modal component or null if not open
+ */
 export function Modal({ isOpen, onClose, children, title, size = 'md' }) {
   // Handle ESC key to close modal
   useEffect(() => {

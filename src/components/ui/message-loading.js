@@ -1,3 +1,11 @@
+/**
+ * MessageLoading component displays an animated loading indicator
+ * to show that the AI is processing a response. Uses SVG animation
+ * for a smooth, modern appearance.
+ * 
+ * @component
+ * @returns {JSX.Element} An animated loading indicator
+ */
 export function MessageLoading() {
   return (
     <svg

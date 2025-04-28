@@ -2,18 +2,24 @@
 
 Welcome to your reusable **Claude 3 + OpenAI + Supabase RAG Chat SDK**!
 
-This SDK allows you to instantly add a **floating AI chat bubble** powered by **RAG retrieval** to any Next.js app.
+This SDK allows you to instantly add a **floating AI chat bubble** powered by **RAG retrieval** to any Next.js app, featuring a modern user interface with glassmorphism effects, smooth animations, and a responsive design.
 
 ---
 
 ## Features
 
-- Floating chat widget (Intercom-style)
+- Floating chat widget (Intercom-style) with popout modal capability
+- Modern UI with glassmorphism effects and smooth animations
+- Consistent AI avatar styling and auto-scrolling to latest messages
+- Light and dark mode support with responsive design
+- Chat bubbles with distinct styling for user and AI messages
+- Real-time typing indicator for AI responses
 - Claude 3 LLM answering (Anthropic API)
 - OpenAI Embeddings for vector search
 - Supabase pgvector vectorstore backend
 - Message history saving (Supabase messages table)
 - Modular, scalable, HIPAA-compliant structure
+- Comprehensive JSDoc documentation for developer clarity
 
 ---
 
@@ -23,9 +29,16 @@ This SDK allows you to instantly add a **floating AI chat bubble** powered by **
 /
 ├── /src
 │   ├── /components
-│   │   ├── Chat.js              # Chat input/output UI
-│   │   ├── FloatingChat.js      # Floating button + modal
-│   │   ├── MessageBubble.js     # Message UI component
+│   │   ├── Chat.js              # Chat input/output UI with modern interface
+│   │   ├── FloatingChat.js      # Floating button + modal with popout capability
+│   │   ├── /ui                  # UI component directory
+│   │   │   ├── chat-bubble.js   # Modern message bubble component
+│   │   │   ├── chat-input.js    # Input field with send button
+│   │   │   ├── typing-indicator.js # Animated typing indicator
+│   │   │   ├── message-loading.js # SVG loading animation
+│   │   │   ├── modal.js         # Popout modal component
+│   │   │   ├── expandable-chat.js # Chat expansion components
+│   │   ├── MessageBubble.js     # Legacy message component (replaced)
 │   ├── /lib
 │   │   ├── supabaseClient.js    # Supabase client setup
 │   │   ├── embeddings.js        # Generate OpenAI embeddings

@@ -7,6 +7,12 @@ import { Modal } from './ui/modal';
 import { X, Bot, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
+
+/**
+ * @typedef {Object} Message
+ * @property {'user'|'assistant'} role - The role of the message sender
+ * @property {string} content - The text content of the message
+ */
 // Re-define the components that were removed from expandable-chat.js
 
 const positions = {
@@ -22,6 +28,17 @@ const sizes = {
   lg: 'w-[400px]',
 };
 
+/**
+ * ExpandableChat component serves as the container for the chat interface
+ * in its floating state. It handles positioning and animations.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render
+ * @param {'bottom-right'|'bottom-left'|'top-right'|'top-left'} [props.position='bottom-right'] - Position on the screen
+ * @param {'sm'|'md'|'lg'} [props.size='md'] - Size of the chat container
+ * @returns {JSX.Element} A positioned and animated chat container
+ */
 function ExpandableChat({ 
   children, 
   position = 'bottom-right',
@@ -50,6 +67,15 @@ function ExpandableChat({
   );
 }
 
+/**
+ * ExpandableChatBody provides the scrollable content area for the chat messages.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render
+ * @param {string} [props.className] - Additional CSS classes
+ * @returns {JSX.Element} A styled container for chat messages
+ */
 function ExpandableChatBody({ children, className }) {
   return (
     <div className={cn('flex-1 overflow-y-auto', className)}>
@@ -58,6 +84,14 @@ function ExpandableChatBody({ children, className }) {
   );
 }
 
+/**
+ * ExpandableChatFooter provides the container for the chat input area.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render
+ * @returns {JSX.Element} A styled container for the chat input
+ */
 function ExpandableChatFooter({ children }) {
   return (
     <div className="border-t border-gray-200/20">
@@ -66,6 +100,16 @@ function ExpandableChatFooter({ children }) {
   );
 }
 
+/**
+ * ExpandableChatHeader provides the header section of the chat interface with controls.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onClose - Function to call when the close button is clicked
+ * @param {Function} props.onMinimize - Function to call when the minimize button is clicked
+ * @param {Function} [props.onPopout] - Optional function to call when the popout button is clicked
+ * @returns {JSX.Element} A styled header with controls
+ */
 function ExpandableChatHeader({ onClose, onMinimize, onPopout }) {
   return (
     <div className="px-4 py-3 border-b border-gray-200/20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
@@ -110,6 +154,15 @@ function ExpandableChatHeader({ onClose, onMinimize, onPopout }) {
   );
 }
 
+/**
+ * Main Chat component that provides the complete chat interface with AI integration.
+ * Includes message handling, demo mode, modal popout, and UI rendering.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onClose - Function to call when the chat is closed
+ * @returns {JSX.Element} The complete chat interface
+ */
 export default function Chat({ onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -183,7 +236,12 @@ export default function Chat({ onClose }) {
     setIsModalOpen(false);
   };
 
-  // Render just the chat content for reuse in both contexts
+  /**
+   * Renders the chat message list and input field for reuse in both
+   * the standard chat view and the popout modal view.
+   * 
+   * @returns {JSX.Element} Rendered chat content
+   */
   const renderChatContent = () => (
     <>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

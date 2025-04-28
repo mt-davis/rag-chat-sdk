@@ -2,6 +2,17 @@ import { Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
+/**
+ * ChatInput component provides a styled input field with a send button
+ * for users to type and submit messages in the chat interface.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {string} props.value - The current value of the input field
+ * @param {Function} props.onChange - Function called when input value changes
+ * @param {boolean} [props.disabled=false] - Whether the input is disabled
+ * @returns {JSX.Element} A styled input field with a send button
+ */
 export function ChatInput({ value, onChange, disabled }) {
   return (
     <div className="relative flex-1">

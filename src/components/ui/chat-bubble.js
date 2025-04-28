@@ -1,6 +1,16 @@
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
+/**
+ * ChatBubble component renders an individual message in the chat interface
+ * with different styling based on whether it's from the AI or the user.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {string} props.message - The text content of the message
+ * @param {boolean} props.isAI - Whether the message is from the AI (true) or user (false)
+ * @returns {JSX.Element} A styled chat bubble with appropriate animations
+ */
 export function ChatBubble({ message, isAI }) {
   return (
     <motion.div
