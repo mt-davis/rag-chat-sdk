@@ -35,15 +35,25 @@ A modern, customizable chat interface for Next.js applications featuring a sleek
 │   ├── /components
 │   │   ├── Chat.js              # Main chat component with message handling
 │   │   ├── FloatingChat.js      # Floating button + expandable chat interface
+│   │   ├── MessageBubble.js     # Legacy message component
 │   │   ├── /ui                  # UI component directory
-│   │   │   ├── chat-bubble.js   # Modern message bubble component
-│   │   │   ├── chat-input.js    # Input field with send button
-│   │   │   ├── message-loading.js # Loading animation for AI typing
-│   │   │   ├── modal.js         # Popout modal component
-│   │   │   ├── expandable-chat.js # Chat expansion components
+│   │       ├── chat-bubble.js   # Modern message bubble component
+│   │       ├── chat-input.js    # Input field with send button
+│   │       ├── expandable-chat.js # Chat expansion components
+│   │       ├── message-loading.js # Loading animation for AI typing
+│   │       ├── modal.js         # Popout modal component
+│   │       ├── thread-container.js # Container for threaded messages
+│   │       ├── typing-indicator.js # Typing animation component
 │   ├── /lib
-│   │   ├── utils.js            # Utility functions
+│   │   ├── anthropicClient.js   # Anthropic API client (optional)
+│   │   ├── embeddings.js       # Embeddings generation (optional)
+│   │   ├── rag.js             # RAG implementation (optional)
 │   │   ├── supabaseClient.js    # Supabase client (optional)
+│   │   ├── utils.js            # Utility functions
+│   ├── /pages
+│       ├── index.js           # Example page implementation
+│       ├── _app.js            # Next.js app configuration
+├── /public              # Static assets
 ```
 
 ---
